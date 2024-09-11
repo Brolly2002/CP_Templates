@@ -50,12 +50,21 @@ struct dinic {
     long long findAugementingPath (int node, long long minCapacity) {
         if (minCapacity == 0) return 0LL;
         else if (node == sink) return minCapacity;
-        for (int& curindex = ptr[node]; curindex < _graph[node].size(); curindex ++) {
-            int id = _graph[node][curindex];
+        while (ptr[node] < (int) _graph[node].size()) {
+            int id = _graph[node][ptr[node]];
             int adjVertex = edges[id].v;
-            if ((level[node] + 1) != level[adjVertex] or edges[id].capacity - edges[id].flow < 1) continue;
+            // This current adjVertex has no augumenting path further, Hence we'll increment the pointer so that it can't be considered again
+            // in our current layered network
+            if ((level[node] + 1) != level[adjVertex] or edges[id].capacity - edges[id].flow < 1) {
+                ptr[node] ++;
+                continue;
+            }
             long long getMinCapacity = findAugementingPath(adjVertex, min(minCapacity, edges[id].capacity - edges[id].flow));
-            if (getMinCapacity == 0) continue;
+            // same as the comment mentioned above
+            if (getMinCapacity == 0) {
+                ptr[node] ++;
+                continue;
+            }
             edges[id].flow += getMinCapacity;
             edges[id ^ 1].flow -= getMinCapacity;
             return getMinCapacity;
